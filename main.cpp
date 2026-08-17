@@ -1,7 +1,9 @@
 #include <raylib.h>
 #include <ctime>
+#include "cellGrid.hpp"
 
-int sWidth = 1280, sHeight = 800;
+cellGrid cell;
+int sWidth = 640, sHeight = 640;
 const int sFrameRste = 60;
 
 int main(){
@@ -13,6 +15,12 @@ int main(){
         
         ClearBackground(BLACK);
         BeginDrawing();
+        
+        // Drawing
+        cell.draw(sHeight, sWidth);
+
+        //Updating
+        cell.update();
 
         EndDrawing();
 
