@@ -17,32 +17,34 @@ cellGrid::cellGrid(){
 }
 
 void cellGrid::update(){
-    int spread = 0;
     for (int x = 0; x < 16; x++){
         for (int y = 0; y < 16; y++){
             for (int z = 0; z < 4; z++){
-                while(spread == 0){
-                    if(cellGridState[x][y][z] == treeBurning || cellGridState[x][y][z]  == houseBurning){
+                if(cellGridState[x][y][z] == treeBurning || cellGridState[x][y][z]  == houseBurning){
 
-                        int nextX = x;
-                        int nextY = y;
-                        nextX += (rand() % 4);
-                        nextY += (rand() % 4);
+                    int nextX = x;
+                    int nextY = y;                  
+                    
+                    while(true){
 
-                        if(cellGridState[nextX][nextY][z] == treeHealthy){
+                        nextX=x;
+                        nextY=y;
+                    
+                        nextX += (rand() % 3) - 1;
+                        nextY += (rand() % 3) - 1;
 
-                            cellGridState[nextX][nextY][z] = treeBurning;
-                            spread = 1;
-                        }
-                        else if(cellGridState[nextX][nextY][z] == house){
+                        if(nextX >= 0 && nextX < 16 && nextY >= 0 && nextY < 16){
 
-                            cellGridState[nextX][nextY][z] = houseBurning;
-                            spread = 1;
-                        }    
-                        else{
-                                nextX += (rand() % 3);
-                                nextY += (rand() % 3);
-                        
+                            if(cellGridState[nextX][nextY][z] == treeHealthy){
+
+                                cellGridState[nextX][nextY][z] = treeBurning;
+                                break;
+                            }
+                            else if(cellGridState[nextX][nextY][z] == house){
+
+                                cellGridState[nextX][nextY][z] = houseBurning;
+                                break;
+                            }
                         }
                     }
                 }
