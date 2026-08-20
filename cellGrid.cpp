@@ -12,46 +12,67 @@ cellGrid::cellGrid(){
         }
     }
     srand(time(0));
-    cellGridState[rand()%16][rand()%16][rand()%4] = treeBurning;
+    int xC = rand()%16, yC = rand()%16, zC = rand()%4;
+    cellGridState[xC][yC][zC] = treeBurning;
+    cellGridTime[xC][yC][zC] = time(0);
 
 }
 
-void cellGrid::update(){
-    for (int x = 0; x < 16; x++){
-        for (int y = 0; y < 16; y++){
-            for (int z = 0; z < 4; z++){
-                if(cellGridState[x][y][z] == treeBurning || cellGridState[x][y][z]  == houseBurning){
+void cellGrid::update(int time2){
+    time2 = time(0) - 3;
+    if(time1 < time2){
+        time1 = time2;
+        for (int x = 0; x < 16; x++){
+            for (int y = 0; y < 16; y++){
+                for (int z = 0; z < 4; z++){
+                    if(cellGridTime[x][y][z] <= time1 && cellGridState[x][y][z] == treeBurning){
 
-                    int nextX = x;
-                    int nextY = y;                  
+                        cellGridState[x][y][z] = treeBurnt;
+
+                    }
+                    else if(cellGridTime[x][y][z] <= (time1 - 3) && cellGridState[x][y][z] == houseBurning){
+
+                        cellGridState[x][y][z] = houseBurnt;
+
+                    }                    
                     
-                    while(true){
+                    if(cellGridState[x][y][z] == treeBurning || cellGridState[x][y][z]  == houseBurning){
 
-                        nextX=x;
-                        nextY=y;
+                        int nextX = x;
+                        int nextY = y;
+                        int nextZ = rand() % 4;                  
                     
-                        nextX += (rand() % 3) - 1;
-                        nextY += (rand() % 3) - 1;
+                        for(int attempt = 0; attempt < 5; attempt++){
 
-                        if(nextX >= 0 && nextX < 16 && nextY >= 0 && nextY < 16){
+                            nextX=x;
+                            nextY=y;
+                    
+                            nextX += (rand() % 3) - 1;
+                            nextY += (rand() % 3) - 1;
 
-                            if(cellGridState[nextX][nextY][z] == treeHealthy){
+                            if(nextX >= 0 && nextX < 16 && nextY >= 0 && nextY < 16){
 
-                                cellGridState[nextX][nextY][z] = treeBurning;
-                                break;
-                            }
-                            else if(cellGridState[nextX][nextY][z] == house){
+                                if(cellGridState[nextX][nextY][nextZ] == treeHealthy){
 
-                                cellGridState[nextX][nextY][z] = houseBurning;
-                                break;
+                                    cellGridState[nextX][nextY][nextZ] = treeBurning;
+                                    cellGridTime[nextX][nextY][nextZ] = time(0);
+                                    break;
+                                }
+                                else if(cellGridState[nextX][nextY][nextZ] == house){
+
+                                    cellGridState[nextX][nextY][nextZ] = houseBurning;
+                                    cellGridTime[nextX][nextY][nextZ] = time(0);
+                                    break;
+                                }
                             }
                         }
-                    }
+                    } 
                 }
             }
         }
     }
 }
+
 
 void cellGrid::draw(int sHeight, int sWidth){
 

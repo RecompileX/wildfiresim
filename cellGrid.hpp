@@ -23,11 +23,13 @@ class cellGrid
 {
     private:
     int cellXcellY[16][16][2];
+    int time1;
     
     cellState cellGridState[16][16][4];
+    int cellGridTime[16][16][4];
 
     public:
     
     cellGrid();
-    void update(), draw(int sHeight, int sWidth);
+    void update(int time2), draw(int sHeight, int sWidth);
 };

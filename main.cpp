@@ -19,8 +19,8 @@ int main(){
         // Drawing
         cell.draw(sHeight, sWidth);
 
-        //Updating
-        cell.update();
+        // Updating
+        cell.update(time(0));
 
         EndDrawing();
 
