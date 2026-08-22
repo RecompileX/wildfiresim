@@ -3,22 +3,7 @@
 #include <random>
 #include <ctime>
 #include "toolbox\toolbox.hpp"
-
-enum cellState {
-    treeHealthy,
-    treeBurnt,
-    treeBurning,
-    treePutOut,
-    treeRetardant,
-
-    water,
-    road,
-    house,
-    houseBurnt,
-    houseBurning,
-    houseRetardant
-};
-
+#include "map.hpp"
 
 class cellGrid
 {
@@ -34,6 +19,6 @@ class cellGrid
 
     public:
     
-    cellGrid();
+    cellGrid(map& map);
     void update(int time2), draw(int sHeight, int sWidth);
 };

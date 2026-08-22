@@ -2,11 +2,17 @@
 #include <ctime>
 #include "cellGrid.hpp"
 
-cellGrid cell;
+
 int sWidth = 1080, sHeight = 1080;
 const int sFrameRste = 60;
 
 int main(){
+
+    // Load the map file before creating the cell grid
+    map mapData;
+    mapData.load("test.map");
+    cellGrid cell(mapData);
+
 
     InitWindow(sWidth, sHeight, "Wildfire Sim");
     SetTargetFPS(sFrameRste);
