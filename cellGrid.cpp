@@ -78,25 +78,33 @@ void cellGrid::windDirectionCalculator(int windDirectionSpeed[2]){
 }
 
 void cellGrid::update(int time2){
-    windDirectionCalculator(windDirection);
     time2 = time(0) - 3;
+    cellState oldGridState[16][16][4];
     if(timeUpdate < time2){
         timeUpdate = time2;
+        windDirectionCalculator(windDirection);
+        for(int x = 0; x < 16; x++){
+            for(int y = 0; y < 16; y++){
+                for(int z = 0; z < 4; z++){
+                    oldGridState[x][y][z] = cellGridState[x][y][z];
+                }
+            }
+        }
         for (int x = 0; x < 16; x++){
             for (int y = 0; y < 16; y++){
                 for (int z = 0; z < 4; z++){
-                    if(cellGridTime[x][y][z] <= timeUpdate - 3 && cellGridState[x][y][z] == treeBurning){
+                    if(cellGridTime[x][y][z] <= timeUpdate - 3 && oldGridState[x][y][z] == treeBurning){
 
                         cellGridState[x][y][z] = treeBurnt;
 
                     }
-                    else if(cellGridTime[x][y][z] <= timeUpdate - 6 && cellGridState[x][y][z] == houseBurning){
+                    else if(cellGridTime[x][y][z] <= timeUpdate - 6 && oldGridState[x][y][z] == houseBurning){
 
                         cellGridState[x][y][z] = houseBurnt;
 
                     }                    
                     
-                    if(cellGridState[x][y][z] == treeBurning || cellGridState[x][y][z]  == houseBurning){
+                    if(oldGridState[x][y][z] == treeBurning || oldGridState[x][y][z]  == houseBurning){
 
                         int nextX = x;
                         int nextY = y;
@@ -112,13 +120,13 @@ void cellGrid::update(int time2){
 
                             if(nextX >= 0 && nextX < 16 && nextY >= 0 && nextY < 16){
 
-                                if(cellGridState[nextX][nextY][nextZ] == treeHealthy){
+                                if(oldGridState[nextX][nextY][nextZ] == treeHealthy){
 
                                     cellGridState[nextX][nextY][nextZ] = treeBurning;
                                     cellGridTime[nextX][nextY][nextZ] = time(0);
                                     break;
                                 }
-                                else if(cellGridState[nextX][nextY][nextZ] == house){
+                                else if(oldGridState[nextX][nextY][nextZ] == house){
 
                                     cellGridState[nextX][nextY][nextZ] = houseBurning;
                                     cellGridTime[nextX][nextY][nextZ] = time(0);
