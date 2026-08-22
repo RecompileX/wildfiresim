@@ -3,7 +3,7 @@
 #include "cellGrid.hpp"
 
 cellGrid cell;
-int sWidth = 640, sHeight = 640;
+int sWidth = 1080, sHeight = 1080;
 const int sFrameRste = 60;
 
 int main(){
