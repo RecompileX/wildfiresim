@@ -15,7 +15,7 @@ cellGrid::cellGrid(map& map){
     timeUpdate = time(0);
     srand(time(0));
     bool fireStarted = false;
-    while(fireStarted = false){
+    while(fireStarted == false){
         int xC = rand()%16, yC = rand()%16, zC = rand()%4;
         if(cellGridState[xC][yC][zC] == treeBurning){
             cellGridState[xC][yC][zC] = treeBurning;
