@@ -1,12 +1,20 @@
 #include "cellGrid.hpp"
 
 cellGrid::cellGrid(map& map){
-    for (int x = 0; x < 16; x++)
-    {
-        for (int y = 0; y < 16; y++)
-        {
-            for (int z = 0; z < 4; z++)
-            {
+    mapHeight = map.height;
+    mapWidth = map.width;
+    subCell = map.subCell;
+
+    cellGridState.resize(mapWidth);
+    cellGridTime.resize(mapWidth);
+
+    for (int x = 0; x < mapWidth; x++){
+        cellGridState[x].resize(mapHeight);
+        cellGridTime[x].resize(mapHeight);
+        for (int y = 0; y < mapHeight; y++){
+            cellGridState[x][y].resize(subCell);
+            cellGridTime[x][y].resize(subCell);
+            for (int z = 0; z < subCell; z++){
                 cellGridState[x][y][z] = map.mapData[x][y][z];
             }
         }
@@ -16,14 +24,16 @@ cellGrid::cellGrid(map& map){
     srand(time(0));
     bool fireStarted = false;
     while(fireStarted == false){
-        int xC = rand()%16, yC = rand()%16, zC = rand()%4;
-        if(cellGridState[xC][yC][zC] == treeBurning){
+        int xC = rand()%mapWidth, yC = rand()%mapHeight, zC = rand()%subCell;
+        if(cellGridState[xC][yC][zC] == treeHealthy){
             cellGridState[xC][yC][zC] = treeBurning;
             cellGridTime[xC][yC][zC] = time(0);
             fireStarted = true;
         }
     }
 }
+
+// variables labled time 2 is current time with a delay depending on the function
 
 void cellGrid::windDirectionCalculator(int windDirectionSpeed[2]){
     int time2;
@@ -40,6 +50,7 @@ void cellGrid::windDirectionCalculator(int windDirectionSpeed[2]){
     }
     if(!toolbox::chance(windSpeed)){
 
+        // 0 is for x, -1 meaning left 1 meaning right 1 is for y with 1 being up and -1 being down
         windDirectionSpeed[0] = toolbox::random(-1, 1);
         windDirectionSpeed[1] = toolbox::random(-1, 1);
             
@@ -82,22 +93,23 @@ void cellGrid::windDirectionCalculator(int windDirectionSpeed[2]){
     }
 }
 
-void cellGrid::update(int time2){
-    time2 = time(0) - 3;
-    cellState oldGridState[16][16][4];
+void cellGrid::update(){
+    int time2 = time(0) - 3;
+    cellState oldGridState[mapWidth][mapHeight][subCell];
     if(timeUpdate < time2){
         timeUpdate = time2;
         windDirectionCalculator(windDirection);
-        for(int x = 0; x < 16; x++){
-            for(int y = 0; y < 16; y++){
-                for(int z = 0; z < 4; z++){
+        for(int x = 0; x < mapWidth; x++){
+            for(int y = 0; y < mapHeight; y++){
+                for(int z = 0; z < subCell; z++){
                     oldGridState[x][y][z] = cellGridState[x][y][z];
                 }
             }
         }
-        for (int x = 0; x < 16; x++){
-            for (int y = 0; y < 16; y++){
-                for (int z = 0; z < 4; z++){
+        
+        for (int x = 0; x < mapWidth; x++){
+            for (int y = 0; y < mapHeight; y++){
+                for (int z = 0; z < subCell; z++){
                     if(cellGridTime[x][y][z] <= timeUpdate - 3 && oldGridState[x][y][z] == treeBurning){
 
                         cellGridState[x][y][z] = treeBurnt;
@@ -113,30 +125,27 @@ void cellGrid::update(int time2){
 
                         int nextX = x;
                         int nextY = y;
-                        int nextZ = rand() % 4;                  
-                    
-                        for(int attempt = 0; attempt < 5; attempt++){
+                        int nextZ = rand() % subCell;                  
 
-                            nextX=x;
-                            nextY=y;
-                    
-                            nextX += windDirection[0];
-                            nextY += windDirection[1];
+                        nextX=x;
+                        nextY=y;
+                
+                        nextX += windDirection[0];
+                        nextY += windDirection[1];
 
-                            if(nextX >= 0 && nextX < 16 && nextY >= 0 && nextY < 16){
+                        if(nextX >= 0 && nextX < mapWidth && nextY >= 0 && nextY < mapHeight){
 
-                                if(oldGridState[nextX][nextY][nextZ] == treeHealthy){
+                            if(oldGridState[nextX][nextY][nextZ] == treeHealthy){
 
-                                    cellGridState[nextX][nextY][nextZ] = treeBurning;
-                                    cellGridTime[nextX][nextY][nextZ] = time(0);
-                                    break;
-                                }
-                                else if(oldGridState[nextX][nextY][nextZ] == house){
+                                cellGridState[nextX][nextY][nextZ] = treeBurning;
+                                cellGridTime[nextX][nextY][nextZ] = time(0);
+                                break;
+                            }
+                            else if(oldGridState[nextX][nextY][nextZ] == house){
 
-                                    cellGridState[nextX][nextY][nextZ] = houseBurning;
-                                    cellGridTime[nextX][nextY][nextZ] = time(0);
-                                    break;
-                                }
+                                cellGridState[nextX][nextY][nextZ] = houseBurning;
+                                cellGridTime[nextX][nextY][nextZ] = time(0);
+                                break;
                             }
                         }
                     } 
@@ -149,20 +158,18 @@ void cellGrid::update(int time2){
 
 void cellGrid::draw(int sHeight, int sWidth){
 
-    int cellWidth = sWidth / 16;
-    int cellHeight = sHeight / 16;
+    int cellWidth = sWidth / mapWidth;
+    int cellHeight = sHeight / mapHeight;
 
     int subCellWidth = cellWidth / 2;
     int subCellHeight = cellHeight / 2;
     
-    for (int x = 0; x < 16; x++){
-    
-        for (int y = 0; y < 16; y++){
-        
-            for (int z = 0; z < 4; z++){
+    for (int x = 0; x < mapWidth; x++){
+        for (int y = 0; y < mapHeight; y++){
+            for (int z = 0; z < subCell; z++){
 
-                int drawX = x * cellWidth + (z % 2) * subCellWidth;
-                int drawY = y * cellHeight + (z / 2) * subCellHeight;
+                int drawX = x * cellWidth + (z % (subCell / 2)) * subCellWidth;
+                int drawY = y * cellHeight + (z / (subCell / 2)) * subCellHeight;
 
                 switch (cellGridState[x][y][z]){
                     case treeHealthy:

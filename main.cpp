@@ -8,9 +8,14 @@ const int sFrameRste = 60;
 
 int main(){
 
-    // Load the map file before creating the cell grid
+    // Load the map file and ask user name before creating the cell grid
     map mapData;
-    mapData.load("test.map");
+    
+    std::string mapName;
+    std::cout << "Enter map name: ";
+    std::cin >> mapName;
+    mapData.load(mapName + ".map");
+    
     cellGrid cell(mapData);
 
 
@@ -26,7 +31,7 @@ int main(){
         cell.draw(sHeight, sWidth);
 
         // Updating
-        cell.update(time(0));
+        cell.update();
 
         EndDrawing();
 
