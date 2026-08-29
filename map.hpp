@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -19,12 +20,24 @@ enum cellState {
     houseRetardant
 };
 
+namespace fs = std::filesystem;
+
 struct map {
 
     std::vector<std::vector<std::vector<cellState>>> mapData;
 
     int width = 0, height = 0, subCell = 4;
 
+    void listFiles(std::vector<std::string>& mapList)
+{
+    for (const auto& file : std::filesystem::directory_iterator("maps")){
+        if (file.path().extension() == ".map"){
+            
+            mapList.push_back(file.path().filename().string());
+        }
+    }
+}
+    
     void load(const std::string& filename) {
 
         std::ifstream file(filename);

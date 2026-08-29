@@ -95,17 +95,10 @@ void cellGrid::windDirectionCalculator(int windDirectionSpeed[2]){
 
 void cellGrid::update(){
     int time2 = time(0) - 3;
-    cellState oldGridState[mapWidth][mapHeight][subCell];
     if(timeUpdate < time2){
         timeUpdate = time2;
         windDirectionCalculator(windDirection);
-        for(int x = 0; x < mapWidth; x++){
-            for(int y = 0; y < mapHeight; y++){
-                for(int z = 0; z < subCell; z++){
-                    oldGridState[x][y][z] = cellGridState[x][y][z];
-                }
-            }
-        }
+        auto oldGridState = cellGridState;
         
         for (int x = 0; x < mapWidth; x++){
             for (int y = 0; y < mapHeight; y++){
