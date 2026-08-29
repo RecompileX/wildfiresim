@@ -1,0 +1,106 @@
+# Normalize text files
+
+* text=auto
+
+# C / C++
+
+*.c      text
+*.h      text
+*.cpp    text
+*.cc     text
+*.cxx    text
+*.hpp    text
+*.hh     text
+*.hxx    text
+
+# Build system
+
+CMakeLists.txt text
+*.cmake         text
+
+# Scripts / config
+
+*.sh       text eol=lf
+*.bash     text eol=lf
+*.ps1      text
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+*.json     text
+*.toml     text
+*.yaml     text
+*.yml      text
+*.ini      text
+*.cfg      text
+
+# Documentation
+
+*.md   text
+*.txt  text
+
+# Images / binary assets
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.bmp  binary
+*.ico  binary
+*.webp binary
+
+# Audio
+
+*.wav  binary
+*.mp3  binary
+*.ogg  binary
+*.flac binary
+
+# Fonts
+
+*.ttf  binary
+*.otf  binary
+
+# Compiled / binary files
+
+*.exe  binary
+*.dll  binary
+*.so   binary
+*.dylib binary
+*.a    binary
+*.lib  binary
+*.obj  binary
+*.o    binary
+
+# Game/map/save assets
+
+*.map  text
+*.sav  binary
+
+# ==============================
+
+# GitHub Linguist configuration
+
+# ==============================
+
+# Third-party libraries should not affect language statistics
+
+raygui.c linguist-vendored
+raygui.h linguist-vendored
+
+# If raylib/raygui or other libraries are stored here
+
+external/** linguist-vendored
+vendor/** linguist-vendored
+third_party/** linguist-vendored
+third-party/** linguist-vendored
+libs/** linguist-vendored
+
+# Generated/build output should not count
+
+build/** linguist-generated
+out/** linguist-generated
+bin/** linguist-generated
+
+# CMake-generated files
+
+CMakeFiles/** linguist-generated
+cmake-build-*/** linguist-generated
