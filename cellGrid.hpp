@@ -18,7 +18,7 @@ class cellGrid
     mapWidth, mapHeight, subCell, 
     windDirectionV = 0, windSpeed = 0, windSpeedTime = 0;
     float length, angle;
-    bool firstRun = true, watingForClick2 = false, lineExists = false;
+    bool firstRun = true, waitingForClick2 = false, lineExists = false;
 
     std::vector<std::vector<std::vector<cellState>>> cellGridState;
     std::vector<std::vector<std::vector<int>>> cellGridTime;

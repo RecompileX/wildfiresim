@@ -217,12 +217,12 @@ void cellGrid::draw(int sHeight, int sWidth){
 
     int cellWidth = sWidth / mapWidth;
     int cellHeight = sHeight / mapHeight;
-
     int subCellWidth = cellWidth / 2;
     int subCellHeight = cellHeight / 2;
+    
     if(lineExists == true){
 
-        DrawRectanglePro(Rectangle{(float)mouseX1, (float)mouseY1, length, 15.0f}, Vector2{0, 7.5f}, angle , BLUE);
+        DrawRectanglePro(Rectangle{(float)mouseX1, (float)mouseY1, length, 15.0f}, Vector2{0, 7.5f}, angle, BLUE);
 
     }
     for (int x = 0; x < mapWidth; x++){
