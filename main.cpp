@@ -1,8 +1,7 @@
 #define RAYGUI_IMPLEMENTATION
-#include "ui.hpp"
 #include "cellGrid.hpp"
 
-
+ui uiO;
 int sWidth = 1080, sHeight = 1080;
 const int sFrameRste = 240;
 bool mapLoaded = false, mapAdded = false;
@@ -45,6 +44,7 @@ int main(){
         
         // Drawing
         cell.draw(sHeight, sWidth);
+        uiO.drawTopBanner();
 
         // Updating
         cell.update();

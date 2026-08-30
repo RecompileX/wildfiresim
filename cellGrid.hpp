@@ -4,6 +4,7 @@
 #include <cmath>
 #include "toolbox\toolbox.hpp"
 #include "map.hpp"
+#include "ui.hpp"
 
 class cellGrid
 {
@@ -12,8 +13,12 @@ class cellGrid
     static constexpr int treeBurnTime = 8;
     static constexpr int houseBurnTime = 15;
 
-    int timeUpdate, timeWind, mapWidth, mapHeight, subCell, windDirectionV = 0, windSpeed = 0, windSpeedTime = 0;
-    bool firstRun = true;
+    int mouseX1, mouseX2, mouseY1, mouseY2,
+    timeUpdate, timeWind, 
+    mapWidth, mapHeight, subCell, 
+    windDirectionV = 0, windSpeed = 0, windSpeedTime = 0;
+    float length, angle;
+    bool firstRun = true, watingForClick2 = false, lineExists = false;
 
     std::vector<std::vector<std::vector<cellState>>> cellGridState;
     std::vector<std::vector<std::vector<int>>> cellGridTime;
@@ -22,6 +27,6 @@ class cellGrid
     public:
     
     cellGrid(map& map);
-    void update(int mouseX, int mouseY);
+    void update();
     void draw(int sHeight, int sWidth);
 };

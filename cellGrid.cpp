@@ -33,7 +33,7 @@ cellGrid::cellGrid(map& map){
     }
 }
 
-// variables labled time 2 is current time with a delay depending on the function to be comapred with current time at delay
+// variables labled time 2 is current time with a delay depending on the function to be comapred with current time
 
 void cellGrid::windDirectionCalculator(int windDirection[2]){
     int time2;
@@ -94,11 +94,36 @@ void cellGrid::windDirectionCalculator(int windDirection[2]){
     windSpeedTime = 1 + round(2.0 * log(91.0 - windSpeed) / log(91.0));
 }
 
-void cellGrid::update(int mouseX, int mouseY){
+void cellGrid::update(){
     if(firstRun == true){
     windDirectionCalculator(windDirection);
     }
     int time2 = time(0) - windSpeedTime;
+    if(!waitingForClick2){
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+
+            mouseX1 = GetMouseX();
+            mouseY1 = GetMouseY();
+            waitingForClick2 = true;
+
+        }
+    }
+    else{
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+
+            mouseX2 = GetMouseX();
+            mouseY2 = GetMouseY(); 
+            float dy = mouseY2 - mouseY1;
+            float dx = mouseX2 - mouseX1;
+            length = std::sqrt(dx * dx + dy * dy);
+            angle = std::atan2f(dy, dx) * RAD2DEG;
+
+            lineExists = true;
+            waitingForClick2 = false;
+
+        }
+    }
+    
     if(timeUpdate <= time2){
         timeUpdate = time(0);
         windDirectionCalculator(windDirection);
@@ -140,12 +165,18 @@ void cellGrid::update(int mouseX, int mouseY){
                                 }
 
                                 // Wind bias
-                                bool spreadingWithWind =
-                                    dx == windDirection[0] && dy == windDirection[1];
+                                bool spreadingWithWind = false;
 
-                                bool spreadingAgainstWind =
-                                    dx == -windDirection[0] && dy == -windDirection[1];
+                                bool spreadingAgainstWind = false;
 
+                                if(dx == windDirection[0] && dy == windDirection[1]){
+                                
+                                    spreadingWithWind = true;
+                                }
+                                if(dx == -windDirection[0] && dy == -windDirection[1]){
+                                
+                                    spreadingAgainstWind = true;
+                                }
                                 int spreadChance = 10; // Sideways
 
                                 if(spreadingWithWind){
@@ -189,7 +220,11 @@ void cellGrid::draw(int sHeight, int sWidth){
 
     int subCellWidth = cellWidth / 2;
     int subCellHeight = cellHeight / 2;
-    
+    if(lineExists == true){
+
+        DrawRectanglePro(Rectangle{(float)mouseX1, (float)mouseY1, length, 15.0f}, Vector2{0, 7.5f}, angle , BLUE);
+
+    }
     for (int x = 0; x < mapWidth; x++){
         for (int y = 0; y < mapHeight; y++){
             for (int z = 0; z < subCell; z++){

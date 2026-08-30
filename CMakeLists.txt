@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(wildfiresim
     main.cpp
     cellGrid.cpp
+    ui.cpp
 )
 
 target_link_libraries(wildfiresim PRIVATE
