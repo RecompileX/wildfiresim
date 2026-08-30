@@ -24,7 +24,7 @@ cellGrid::cellGrid(map& map){
     srand(time(0));
     bool fireStarted = false;
     while(fireStarted == false){
-        int xC = rand()%mapWidth, yC = rand()%mapHeight, zC = rand()%subCell;
+        int xC = toolbox::random(0, mapWidth), yC = toolbox::random(0, mapHeight), zC = toolbox::random(0, subCell);
         if(cellGridState[xC][yC][zC] == treeHealthy){
             cellGridState[xC][yC][zC] = treeBurning;
             cellGridTime[xC][yC][zC] = time(0);
@@ -33,11 +33,12 @@ cellGrid::cellGrid(map& map){
     }
 }
 
-// variables labled time 2 is current time with a delay depending on the function
+// variables labled time 2 is current time with a delay depending on the function to be comapred with current time at delay
 
-void cellGrid::windDirectionCalculator(int windDirectionSpeed[2]){
+void cellGrid::windDirectionCalculator(int windDirection[2]){
     int time2;
     time2 = time(0) - 15;
+    windSpeedTime = windSpeed; // finish this
     if(firstRun == true){
         windSpeed = toolbox::random(0, 90);
         windDirectionV = toolbox::random(0, 7);
@@ -51,51 +52,51 @@ void cellGrid::windDirectionCalculator(int windDirectionSpeed[2]){
     if(!toolbox::chance(windSpeed)){
 
         // 0 is for x, -1 meaning left 1 meaning right 1 is for y with 1 being up and -1 being down
-        windDirectionSpeed[0] = toolbox::random(-1, 1);
-        windDirectionSpeed[1] = toolbox::random(-1, 1);
+        windDirection[0] = toolbox::random(-1, 1);
+        windDirection[1] = toolbox::random(-1, 1);
             
     }
     else{
         switch(windDirectionV){
             case 0:
-                windDirectionSpeed[0] = -1;
-                windDirectionSpeed[1] = 1;
+                windDirection[0] = -1;
+                windDirection[1] = 1;
                 break;
             case 1:
-                windDirectionSpeed[0] = 0;
-                windDirectionSpeed[1] = 1;
+                windDirection[0] = 0;
+                windDirection[1] = 1;
                 break;
             case 2:
-                windDirectionSpeed[0] = 1;
-                windDirectionSpeed[1] = 1;
+                windDirection[0] = 1;
+                windDirection[1] = 1;
                 break;
             case 3:
-                windDirectionSpeed[0] = 1;
-                windDirectionSpeed[1] = 0;
+                windDirection[0] = 1;
+                windDirection[1] = 0;
                 break;
             case 4:
-                windDirectionSpeed[0] = 1;
-                windDirectionSpeed[1] = -1;
+                windDirection[0] = 1;
+                windDirection[1] = -1;
                 break;
             case 5:
-                windDirectionSpeed[0] = 0;
-                windDirectionSpeed[1] = -1;
+                windDirection[0] = 0;
+                windDirection[1] = -1;
                 break;
             case 6:
-                windDirectionSpeed[0] = -1;
-                windDirectionSpeed[1] = -1;
+                windDirection[0] = -1;
+                windDirection[1] = -1;
                 break;
             case 7:
-                windDirectionSpeed[0] = -1;
-                windDirectionSpeed[1] = 0;
+                windDirection[0] = -1;
+                windDirection[1] = 0;
                 break;
         }
     }
 }
 
 void cellGrid::update(){
-    int time2 = time(0) - 3;
-    if(timeUpdate < time2){
+    int time2 = time(0);
+    if(timeUpdate < time2 - windSpeedTime){
         timeUpdate = time2;
         windDirectionCalculator(windDirection);
         auto oldGridState = cellGridState;
@@ -103,12 +104,12 @@ void cellGrid::update(){
         for (int x = 0; x < mapWidth; x++){
             for (int y = 0; y < mapHeight; y++){
                 for (int z = 0; z < subCell; z++){
-                    if(cellGridTime[x][y][z] <= timeUpdate - 3 && oldGridState[x][y][z] == treeBurning){
+                    if(cellGridTime[x][y][z] <= timeUpdate - windSpeedTime && oldGridState[x][y][z] == treeBurning){
 
                         cellGridState[x][y][z] = treeBurnt;
 
                     }
-                    else if(cellGridTime[x][y][z] <= timeUpdate - 6 && oldGridState[x][y][z] == houseBurning){
+                    else if(cellGridTime[x][y][z] <= timeUpdate - windSpeedTime * 2 && oldGridState[x][y][z] == houseBurning){
 
                         cellGridState[x][y][z] = houseBurnt;
 
@@ -118,7 +119,7 @@ void cellGrid::update(){
 
                         int nextX = x;
                         int nextY = y;
-                        int nextZ = rand() % subCell;                  
+                        int nextZ = toolbox::random(0, subCell - 1);                  
 
                         nextX=x;
                         nextY=y;
@@ -132,13 +133,11 @@ void cellGrid::update(){
 
                                 cellGridState[nextX][nextY][nextZ] = treeBurning;
                                 cellGridTime[nextX][nextY][nextZ] = time(0);
-                                break;
                             }
                             else if(oldGridState[nextX][nextY][nextZ] == house){
 
                                 cellGridState[nextX][nextY][nextZ] = houseBurning;
                                 cellGridTime[nextX][nextY][nextZ] = time(0);
-                                break;
                             }
                         }
                     } 

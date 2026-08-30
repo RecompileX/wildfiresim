@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-#include <iostream>
+#include <print>
 
 enum cellState {
     treeHealthy,
@@ -43,7 +43,7 @@ struct map {
         std::ifstream file(filename);
 
         if (!file.is_open()){
-            std::cout << "Map file not found" << std::endl;
+            std::println("Map file not found");
             return;
         }
 
@@ -53,14 +53,14 @@ struct map {
 
         // Header must be in the format #widthxheight
         if (header.size() < 4 || header[0] != '#'){
-            std::cout << "Header not in correct format or not found" << std::endl;
+            std::println("Header not in correct format or not found");
             return;
         }
         // find the x ex: 16"x"16
         size_t xPosition = header.find('x');
 
         if (xPosition == std::string::npos){
-            std::cout << "xPosition returned npos integer" << std::endl;    
+            std::println("xPosition returned npos integer");
             return;
         }
         
@@ -71,7 +71,7 @@ struct map {
 
         // Dimensions check
         if (width <= 0 || height <= 0){
-            std::cout << "Invalid dimensions" << std::endl;
+            std::println("Invalid dimensions");
             return;
         }
 
@@ -121,7 +121,7 @@ struct map {
                             break;
 
                         default:
-                            std::cout << "Invalid cell type" << std::endl;
+                            std::println("Invalid cell type");
                             return;
                     }
                 }
