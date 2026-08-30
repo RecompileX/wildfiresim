@@ -45,9 +45,10 @@ int main(){
         // Drawing
         cell.draw(sHeight, sWidth);
         uiO.drawTopBanner();
+        uiO.drawButtons(cell.getWaterCooldown(), cell.getRetardantCooldown());
 
         // Updating
-        cell.update();
+        cell.update(uiO.getLiquidType());
 
         EndDrawing();
 
