@@ -1,6 +1,7 @@
 #pragma once
 #include <raylib.h>
 #include <ctime>
+#include <cmath>
 #include "toolbox\toolbox.hpp"
 #include "map.hpp"
 
@@ -8,7 +9,10 @@ class cellGrid
 {
     private:
     int windDirection[2];
-    int timeUpdate, timeWind, mapWidth, mapHeight, subCell, windDirectionV = 0, windSpeed = 0, windSpeedTime = 0;;
+    static constexpr int treeBurnTime = 8;
+    static constexpr int houseBurnTime = 15;
+
+    int timeUpdate, timeWind, mapWidth, mapHeight, subCell, windDirectionV = 0, windSpeed = 0, windSpeedTime = 0;
     bool firstRun = true;
 
     std::vector<std::vector<std::vector<cellState>>> cellGridState;

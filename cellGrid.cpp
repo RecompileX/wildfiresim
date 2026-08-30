@@ -24,7 +24,7 @@ cellGrid::cellGrid(map& map){
     srand(time(0));
     bool fireStarted = false;
     while(fireStarted == false){
-        int xC = toolbox::random(0, mapWidth), yC = toolbox::random(0, mapHeight), zC = toolbox::random(0, subCell);
+        int xC = toolbox::random(0, mapWidth - 1), yC = toolbox::random(0, mapHeight - 1), zC = toolbox::random(0, subCell - 1);
         if(cellGridState[xC][yC][zC] == treeHealthy){
             cellGridState[xC][yC][zC] = treeBurning;
             cellGridTime[xC][yC][zC] = time(0);
@@ -38,14 +38,13 @@ cellGrid::cellGrid(map& map){
 void cellGrid::windDirectionCalculator(int windDirection[2]){
     int time2;
     time2 = time(0) - 15;
-    windSpeedTime = windSpeed; // finish this
     if(firstRun == true){
         windSpeed = toolbox::random(0, 90);
         windDirectionV = toolbox::random(0, 7);
         firstRun = false;
     }
     if(timeWind <= time2){
-        timeWind = time2;
+        timeWind = time(0);
         windSpeed = toolbox::random(0, 90);
         windDirectionV = toolbox::random(0, 7);
     }
@@ -92,55 +91,90 @@ void cellGrid::windDirectionCalculator(int windDirection[2]){
                 break;
         }
     }
+    windSpeedTime = 1 + round(2.0 * log(91.0 - windSpeed) / log(91.0));
 }
 
 void cellGrid::update(){
-    int time2 = time(0);
-    if(timeUpdate < time2 - windSpeedTime){
-        timeUpdate = time2;
+    if(firstRun == true){
+    windDirectionCalculator(windDirection);
+    }
+    int time2 = time(0) - windSpeedTime;
+    if(timeUpdate <= time2){
+        timeUpdate = time(0);
         windDirectionCalculator(windDirection);
+        // Previous update
         auto oldGridState = cellGridState;
         
+        // Map cells
         for (int x = 0; x < mapWidth; x++){
             for (int y = 0; y < mapHeight; y++){
+                // Subcells
                 for (int z = 0; z < subCell; z++){
-                    if(cellGridTime[x][y][z] <= timeUpdate - windSpeedTime && oldGridState[x][y][z] == treeBurning){
+                    // Burnout
+                    if(cellGridTime[x][y][z] <= timeUpdate - treeBurnTime && oldGridState[x][y][z] == treeBurning){
 
                         cellGridState[x][y][z] = treeBurnt;
 
                     }
-                    else if(cellGridTime[x][y][z] <= timeUpdate - windSpeedTime * 2 && oldGridState[x][y][z] == houseBurning){
+                    else if(cellGridTime[x][y][z] <= timeUpdate - houseBurnTime && oldGridState[x][y][z] == houseBurning){
 
                         cellGridState[x][y][z] = houseBurnt;
 
                     }                    
-                    
-                    if(oldGridState[x][y][z] == treeBurning || oldGridState[x][y][z]  == houseBurning){
+                    // Spread fire
+                    if(oldGridState[x][y][z] == treeBurning || oldGridState[x][y][z] == houseBurning){
+                        // Eight neighbors
+                        for(int dx = -1; dx <= 1; dx++){
+                            for(int dy = -1; dy <= 1; dy++){
+                                // Skip center
+                                if(dx == 0 && dy == 0){
+                                    continue;
+                                }
 
-                        int nextX = x;
-                        int nextY = y;
-                        int nextZ = toolbox::random(0, subCell - 1);                  
+                                int nextX = x + dx;
+                                int nextY = y + dy;
 
-                        nextX=x;
-                        nextY=y;
-                
-                        nextX += windDirection[0];
-                        nextY += windDirection[1];
+                                // Map bounds
+                                if(nextX < 0 || nextX >= mapWidth || nextY < 0 || nextY >= mapHeight){
+                                    continue;
+                                }
 
-                        if(nextX >= 0 && nextX < mapWidth && nextY >= 0 && nextY < mapHeight){
+                                // Wind bias
+                                bool spreadingWithWind =
+                                    dx == windDirection[0] && dy == windDirection[1];
 
-                            if(oldGridState[nextX][nextY][nextZ] == treeHealthy){
+                                bool spreadingAgainstWind =
+                                    dx == -windDirection[0] && dy == -windDirection[1];
 
-                                cellGridState[nextX][nextY][nextZ] = treeBurning;
-                                cellGridTime[nextX][nextY][nextZ] = time(0);
-                            }
-                            else if(oldGridState[nextX][nextY][nextZ] == house){
+                                int spreadChance = 10; // Sideways
 
-                                cellGridState[nextX][nextY][nextZ] = houseBurning;
-                                cellGridTime[nextX][nextY][nextZ] = time(0);
+                                if(spreadingWithWind){
+                                    spreadChance = 80; // Downwind
+                                }
+                                else if(spreadingAgainstWind){
+                                    spreadChance = 5; // Upwind
+                                }
+
+                                // Failed ignition
+                                if(!toolbox::chance(spreadChance)){
+                                    continue;
+                                }
+
+                                // Target subcell
+                                int nextZ = toolbox::random(0, subCell - 1);
+
+                                // Ignite fuel
+                                if(oldGridState[nextX][nextY][nextZ] == treeHealthy){
+                                    cellGridState[nextX][nextY][nextZ] = treeBurning;
+                                    cellGridTime[nextX][nextY][nextZ] = time(0);
+                                }
+                                else if(oldGridState[nextX][nextY][nextZ] == house){
+                                    cellGridState[nextX][nextY][nextZ] = houseBurning;
+                                    cellGridTime[nextX][nextY][nextZ] = time(0);
+                                }
                             }
                         }
-                    } 
+                    }
                 }
             }
         }
