@@ -94,7 +94,7 @@ void cellGrid::windDirectionCalculator(int windDirection[2]){
     windSpeedTime = 1 + round(2.0 * log(91.0 - windSpeed) / log(91.0));
 }
 
-void cellGrid::update(){
+void cellGrid::update(int mouseX, int mouseY){
     if(firstRun == true){
     windDirectionCalculator(windDirection);
     }

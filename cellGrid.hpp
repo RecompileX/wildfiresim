@@ -22,6 +22,6 @@ class cellGrid
     public:
     
     cellGrid(map& map);
-    void update() ;
+    void update(int mouseX, int mouseY);
     void draw(int sHeight, int sWidth);
 };
