@@ -31,13 +31,46 @@ int main(){
                 break;
             }
         }
+
+        if(GuiButton(Rectangle{sWidth / 2.0f - 100.0f, sHeight * 0.75f, 200.0f, 60.0f}, "Settings")){
+
+        }
        
         EndDrawing();
     }
+
+    std::vector<std::string> musicList = {
+        "music/blue-forest.ogg",
+        "music/castle-unknown.ogg",
+        "music/golden-turrets.ogg",
+        "music/night-chip.ogg",
+        "music/the-old-master.ogg",
+        "music/turtle-nap.ogg"
+    };
+
+    InitAudioDevice();
+    int musicNumber = GetRandomValue(0, musicList.size() - 1);
+    Music music = LoadMusicStream(musicList[musicNumber].c_str());
+    PlayMusicStream(music);
     
     cellGrid cell(mapData);
     
     while(!WindowShouldClose()){
+
+        UpdateMusicStream(music);
+
+        if(!IsMusicStreamPlaying(music)){
+            UnloadMusicStream(music);
+
+            int newMusicNumber = GetRandomValue(0, musicList.size() - 1);
+            while(newMusicNumber == musicNumber){
+                newMusicNumber = GetRandomValue(0, musicList.size() - 1);
+            }
+
+            musicNumber = newMusicNumber;
+            music = LoadMusicStream(musicList[musicNumber].c_str());
+            PlayMusicStream(music);
+        }
         
         BeginDrawing();
         ClearBackground(BLACK);
@@ -53,6 +86,8 @@ int main(){
         EndDrawing();
 
     }
+    UnloadMusicStream(music);
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }

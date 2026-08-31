@@ -45,7 +45,7 @@ cellGrid::cellGrid(map& map){
 void cellGrid::windDirectionCalculator(int windDirection[2]){
     int time2;
     time2 = time(0) - 15;
-    if(firstRun == true){
+    if(firstRun){
         windSpeed = toolbox::random(0, 90);
         windDirectionV = toolbox::random(0, 7);
         firstRun = false;
@@ -102,86 +102,171 @@ void cellGrid::windDirectionCalculator(int windDirection[2]){
 }
 
 void cellGrid::applyLiquidToLine(liquidType liquid){
-    for(const lineCalculation::selectedSubCell& cell : lineCells){
-            cellState& state = cellGridState[cell.x][cell.y][cell.z];
-            cellState previousState = state;
+    // Cell sizes
+    int cellWidth = GetScreenWidth() / mapWidth;
+    int cellHeight = GetScreenHeight() / mapHeight;
+    int subCellWidth = cellWidth / 2;
+    int subCellHeight = cellHeight / 2;
 
-            if(liquid == waterT){
-                if(state == treeBurning){
-                    state = treePutOut;
-                }
-                else if(state == houseBurning){
-                    state = house;
-                }
-            }
-            else if(liquid == retardantT){
-                if(state == treeHealthy || state == treeBurning || state == treePutOut){
-                    state = treeRetardant;
-                }
-                else if(state == house || state == houseBurning){
-                    state = houseRetardant;
-                }
-            }
+    // Line distance
+    int differenceX = mouseX2 - mouseX1;
+    int differenceY = mouseY2 - mouseY1;
 
-            if(state != previousState){
-                cellGridLiquidTime[cell.x][cell.y][cell.z] = time(0);
+    // Pixel steps
+    int steps = std::max(std::abs(differenceX), std::abs(differenceY));
+
+    // Prevent divide by zero
+    if(steps == 0){
+        steps = 1;
+    }
+
+    for(int step = 0; step <= steps; step++){
+        // Current point
+        int screenX = mouseX1 + differenceX * step / steps;
+        int screenY = mouseY1 + differenceY * step / steps;
+
+        // Main cell
+        int x = screenX / cellWidth;
+        int y = screenY / cellHeight;
+
+        // Map bounds
+        if(x < 0 || x >= mapWidth || y < 0 || y >= mapHeight){
+            continue;
+        }
+
+        // Subcell
+        int subX = (screenX % cellWidth) / subCellWidth;
+        int subY = (screenY % cellHeight) / subCellHeight;
+        int z = subY * 2 + subX;
+
+        // Subcell bounds
+        if(z < 0 || z >= subCell){
+            continue;
+        }
+
+        cellState& state = cellGridState[x][y][z];
+        cellState previousState = state;
+
+        // Apply water
+        if(liquid == waterT){
+            if(state == treeBurning){
+                state = treePutOut;
             }
+            else if(state == houseBurning){
+                state = house;
+            }
+        }
+        // Apply retardant
+        else if(liquid == retardantT){
+            if(state == treeHealthy || state == treeBurning || state == treePutOut){
+                state = treeRetardant;
+            }
+            else if(state == house || state == houseBurning){
+                state = houseRetardant;
+            }
+        }
+
+        // Liquid time
+        if(state != previousState){
+            cellGridLiquidTime[x][y][z] = time(0);
+        }
     }
 }
 
 void cellGrid::update(liquidType liquid){
-    if(firstRun == true){
+    if(firstRun){
     windDirectionCalculator(windDirection);
     }
     int currentTime = time(0);
-    waterCooldown = waterCooldownEnd > currentTime ? waterCooldownEnd - currentTime : 0;
-    retardantCooldown = retardantCooldownEnd > currentTime ? retardantCooldownEnd - currentTime : 0;
+
+    // Water cooldown
+    if(waterCooldownEnd > currentTime){
+        waterCooldown = waterCooldownEnd - currentTime;
+    }
+    else{
+        waterCooldown = 0;
+    }
+
+    // Retardant cooldown
+    if(retardantCooldownEnd > currentTime){
+        retardantCooldown = retardantCooldownEnd - currentTime;
+    }
+    else{
+        retardantCooldown = 0;
+    }
 
     int time2 = time(0) - windSpeedTime;
+    int timeLine2 = time(0) - 2;
+
+    // Ignore UI clicks
     bool mouseOnMap = GetMouseY() >= GetScreenHeight() / 6;
+
+    // Liquid ready
     bool liquidReady =
         (liquid == waterT && waterCooldown == 0) ||
         (liquid == retardantT && retardantCooldown == 0);
 
-    if(!waitingForClick2){
+    if(!waitingForClick2 && !lineExists){
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouseOnMap && liquidReady){
 
+            // Line start
             mouseX1 = GetMouseX();
             mouseY1 = GetMouseY();
             waitingForClick2 = true;
 
         }
     }
-    else{
+    else if(waitingForClick2){
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouseOnMap){
             if(liquidReady){
+                // Line end
                 mouseX2 = GetMouseX();
                 mouseY2 = GetMouseY(); 
                 float dy = mouseY2 - mouseY1;
                 float dx = mouseX2 - mouseX1;
                 length = std::sqrt(dx * dx + dy * dy);
                 angle = std::atan2f(dy, dx) * RAD2DEG;
+                float dxCells = dx / (GetScreenWidth() / mapWidth);
+                float dyCells = dy / (GetScreenHeight() / mapHeight);
+                float lengthCells = std::sqrt(dxCells * dxCells + dyCells * dyCells);
 
-                int cellWidth = GetScreenWidth() / mapWidth;
-                int cellHeight = GetScreenHeight() / mapHeight;
-                float lineThickness = static_cast<float>(
-                    (cellWidth < cellHeight ? cellWidth : cellHeight) / 2
-                );
-                lineCells = lineCalculation::calculateSubCells(mouseX1, mouseY1, mouseX2, mouseY2, lineThickness, cellWidth, cellHeight, mapWidth, mapHeight, subCell);
-                applyLiquidToLine(liquid);
+                if((liquid == waterT && lengthCells <= maxWaterLength) ||
+                   (liquid == retardantT && lengthCells <= maxRetardantLength)){
 
-                if(liquid == waterT){
-                    waterCooldown = waterCooldownDuration;
-                    waterCooldownEnd = currentTime + waterCooldownDuration;
+                    timeLine = time(0);
+                    lineLiquid = liquid;
+                    lineExists = true;
+                    waitingForClick2 = false;
+                }
+                else if(liquid == waterT){
+                    waterLengthExceeded = true;
+                    retardantLengthExceeded = false;
+                    timeText = time(0);
+                    waitingForClick2 = false;
                 }
                 else if(liquid == retardantT){
-                    retardantCooldown = retardantCooldownDuration;
-                    retardantCooldownEnd = currentTime + retardantCooldownDuration;
+                    retardantLengthExceeded = true;
+                    waterLengthExceeded = false;
+                    timeText = time(0);
+                    waitingForClick2 = false;
                 }
-
-                lineExists = true;
-                waitingForClick2 = false;
             }
+        }
+    }
+
+    // Drop liquid
+    if(lineExists && timeLine <= timeLine2){
+        applyLiquidToLine(lineLiquid);
+        lineExists = false;
+
+        // Start cooldown
+        if(lineLiquid == waterT){
+            waterCooldown = waterCooldownDuration;
+            waterCooldownEnd = currentTime + waterCooldownDuration;
+        }
+        else if(lineLiquid == retardantT){
+            retardantCooldown = retardantCooldownDuration;
+            retardantCooldownEnd = currentTime + retardantCooldownDuration;
         }
     }
     
@@ -346,17 +431,35 @@ void cellGrid::draw(int sHeight, int sWidth){
             }
         }
     }
-    if(lineExists == true && mouseX2 != -1){
+    if(lineExists){
 
-        float lineThickness = static_cast<float>(
-            (cellWidth < cellHeight ? cellWidth : cellHeight) / 2
-        );
+        // Line width
+        float lineThickness = subCellWidth / 2;
+
+        // Line color
+        Color lineColor = BLUE;
+        if(lineLiquid == retardantT){
+            lineColor = PURPLE;
+        }
+
+        // Draw line
         DrawRectanglePro(
             Rectangle{(float)mouseX1, (float)mouseY1, length, lineThickness},
             Vector2{0, lineThickness / 2.0f},
             angle,
-            BLUE
+            lineColor
         );
-        mouseX2 = -1;
+    }
+    if(waterLengthExceeded && timeText >= time(0) - 3){
+        DrawText("Water length exceeded! Max length is 12 cells!", GetScreenWidth()/2 - MeasureText("Water length exceeded! Max length is 12 cells!", 40)/2, GetScreenHeight()/2, 40, RED);
+    }
+    else{
+        waterLengthExceeded = false;
+    }
+    if(retardantLengthExceeded && timeText >= time(0) - 3){
+        DrawText("Retardant length exceeded! Max length is 6 cells!", GetScreenWidth()/2 - MeasureText("Retardant length exceeded! Max length is 6 cells!", 40)/2, GetScreenHeight()/2, 40, RED);
+    }
+    else{
+        retardantLengthExceeded = false;
     }
 }
