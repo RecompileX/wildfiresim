@@ -5,6 +5,14 @@ cellGrid::cellGrid(map& map){
     mapWidth = map.width;
     subCell = map.subCell;
 
+    int mapTop = GetScreenHeight() / 6;
+    cellSize = GetScreenWidth() / mapWidth;
+    if((GetScreenHeight() - mapTop) / mapHeight < cellSize){
+        cellSize = (GetScreenHeight() - mapTop) / mapHeight;
+    }
+    mapStartX = (GetScreenWidth() - cellSize * mapWidth) / 2;
+    mapStartY = mapTop + (GetScreenHeight() - mapTop - cellSize * mapHeight) / 2;
+
     cellGridState.resize(mapWidth);
     cellGridTime.resize(mapWidth);
     cellGridLiquidTime.resize(mapWidth);
@@ -109,10 +117,7 @@ void cellGrid::windDirectionCalculator(int windDirection[2]){
 
 void cellGrid::applyLiquidToLine(liquidType liquid){
     // Cell sizes
-    int cellWidth = GetScreenWidth() / mapWidth;
-    int cellHeight = GetScreenHeight() / mapHeight;
-    int subCellWidth = cellWidth / 2;
-    int subCellHeight = cellHeight / 2;
+    int subCellSize = cellSize / 2;
 
     // Line distance
     int differenceX = mouseX2 - mouseX1;
@@ -132,8 +137,8 @@ void cellGrid::applyLiquidToLine(liquidType liquid){
         int screenY = mouseY1 + differenceY * step / steps;
 
         // Main cell
-        int x = screenX / cellWidth;
-        int y = screenY / cellHeight;
+        int x = (screenX - mapStartX) / cellSize;
+        int y = (screenY - mapStartY) / cellSize;
 
         // Map bounds
         if(x < 0 || x >= mapWidth || y < 0 || y >= mapHeight){
@@ -141,8 +146,8 @@ void cellGrid::applyLiquidToLine(liquidType liquid){
         }
 
         // Subcell
-        int subX = (screenX % cellWidth) / subCellWidth;
-        int subY = (screenY % cellHeight) / subCellHeight;
+        int subX = ((screenX - mapStartX) % cellSize) / subCellSize;
+        int subY = ((screenY - mapStartY) % cellSize) / subCellSize;
         int z = subY * 2 + subX;
 
         // Subcell bounds
@@ -208,8 +213,10 @@ void cellGrid::update(liquidType liquid){
     int time2 = time(0) - windSpeedTime;
     int timeLine2 = time(0) - 2;
 
-    // Ignore UI clicks
-    bool mouseOnMap = GetMouseY() >= GetScreenHeight() / 6;
+    // Map bounds
+    bool mouseOnMap =
+        GetMouseX() >= mapStartX && GetMouseX() < mapStartX + cellSize * mapWidth &&
+        GetMouseY() >= mapStartY && GetMouseY() < mapStartY + cellSize * mapHeight;
 
     // Liquid ready
     bool liquidReady =
@@ -222,44 +229,42 @@ void cellGrid::update(liquidType liquid){
             // Line start
             mouseX1 = GetMouseX();
             mouseY1 = GetMouseY();
+            lineLiquid = liquid;
             waitingForClick2 = true;
 
         }
     }
     else if(waitingForClick2){
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouseOnMap){
-            if(liquidReady){
-                // Line end
-                mouseX2 = GetMouseX();
-                mouseY2 = GetMouseY(); 
-                float dy = mouseY2 - mouseY1;
-                float dx = mouseX2 - mouseX1;
-                length = std::sqrt(dx * dx + dy * dy);
-                angle = std::atan2f(dy, dx) * RAD2DEG;
-                float dxCells = dx / (GetScreenWidth() / mapWidth);
-                float dyCells = dy / (GetScreenHeight() / mapHeight);
-                float lengthCells = std::sqrt(dxCells * dxCells + dyCells * dyCells);
+            // Line end
+            mouseX2 = GetMouseX();
+            mouseY2 = GetMouseY();
+            float dy = mouseY2 - mouseY1;
+            float dx = mouseX2 - mouseX1;
+            length = std::sqrt(dx * dx + dy * dy);
+            angle = std::atan2f(dy, dx) * RAD2DEG;
+            float dxCells = dx / cellSize;
+            float dyCells = dy / cellSize;
+            float lengthCells = std::sqrt(dxCells * dxCells + dyCells * dyCells);
 
-                if((liquid == waterT && lengthCells <= maxWaterLength) ||
-                   (liquid == retardantT && lengthCells <= maxRetardantLength)){
+            if((lineLiquid == waterT && lengthCells <= maxWaterLength) ||
+               (lineLiquid == retardantT && lengthCells <= maxRetardantLength)){
 
-                    timeLine = time(0);
-                    lineLiquid = liquid;
-                    lineExists = true;
-                    waitingForClick2 = false;
-                }
-                else if(liquid == waterT){
-                    waterLengthExceeded = true;
-                    retardantLengthExceeded = false;
-                    timeText = time(0);
-                    waitingForClick2 = false;
-                }
-                else if(liquid == retardantT){
-                    retardantLengthExceeded = true;
-                    waterLengthExceeded = false;
-                    timeText = time(0);
-                    waitingForClick2 = false;
-                }
+                timeLine = time(0);
+                lineExists = true;
+                waitingForClick2 = false;
+            }
+            else if(lineLiquid == waterT){
+                waterLengthExceeded = true;
+                retardantLengthExceeded = false;
+                timeText = time(0);
+                waitingForClick2 = false;
+            }
+            else if(lineLiquid == retardantT){
+                retardantLengthExceeded = true;
+                waterLengthExceeded = false;
+                timeText = time(0);
+                waitingForClick2 = false;
             }
         }
     }
@@ -285,23 +290,12 @@ void cellGrid::update(liquidType liquid){
         windDirectionCalculator(windDirection);
         // Previous update
         auto oldGridState = cellGridState;
-        bool fireExists = false;
-        int survivingStructures = 0;
         
         // Map cells
         for (int x = 0; x < mapWidth; x++){
             for (int y = 0; y < mapHeight; y++){
                 // Subcells
                 for (int z = 0; z < subCell; z++){
-                    // Victory Check
-                    if(cellGridState[x][y][z] == treeBurning || cellGridState[x][y][z] == houseBurning){
-                        fireExists = true;
-                    }
-                    if(cellGridState[x][y][z] == treeHealthy || cellGridState[x][y][z] == treePutOut ||
-                       cellGridState[x][y][z] == treeRetardant || cellGridState[x][y][z] == house ||
-                       cellGridState[x][y][z] == houseRetardant){
-                        survivingStructures++;
-                    }
                     // Burnout / Evap
                     if(cellGridTime[x][y][z] <= timeUpdate - treeBurnTime && oldGridState[x][y][z] == treeBurning){
 
@@ -387,6 +381,26 @@ void cellGrid::update(liquidType liquid){
                 }
             }
         }
+
+        bool fireExists = false;
+        int survivingStructures = 0;
+
+        // Victory check
+        for(int x = 0; x < mapWidth; x++){
+            for(int y = 0; y < mapHeight; y++){
+                for(int z = 0; z < subCell; z++){
+                    if(cellGridState[x][y][z] == treeBurning || cellGridState[x][y][z] == houseBurning){
+                        fireExists = true;
+                    }
+                    if(cellGridState[x][y][z] == treeHealthy || cellGridState[x][y][z] == treePutOut ||
+                       cellGridState[x][y][z] == treeRetardant || cellGridState[x][y][z] == house ||
+                       cellGridState[x][y][z] == houseRetardant){
+                        survivingStructures++;
+                    }
+                }
+            }
+        }
+
         victory = !fireExists;
         if(victory && startingStructureCount > 0){
             float survivalPercent = (float)survivingStructures / startingStructureCount;
@@ -403,69 +417,69 @@ void cellGrid::update(liquidType liquid){
 
 void cellGrid::draw(int sHeight, int sWidth){
 
-    int cellWidth = sWidth / mapWidth;
-    int cellHeight = sHeight / mapHeight;
-    int subCellWidth = cellWidth / 2;
-    int subCellHeight = cellHeight / 2;
+    int subCellSize = cellSize / 2;
     
     for (int x = 0; x < mapWidth; x++){
         for (int y = 0; y < mapHeight; y++){
             for (int z = 0; z < subCell; z++){
 
-                int drawX = x * cellWidth + (z % (subCell / 2)) * subCellWidth;
-                int drawY = y * cellHeight + (z / (subCell / 2)) * subCellHeight;
+                int drawX = mapStartX + x * cellSize + (z % (subCell / 2)) * subCellSize;
+                int drawY = mapStartY + y * cellSize + (z / (subCell / 2)) * subCellSize;
 
                 switch (cellGridState[x][y][z]){
                     case treeHealthy:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, GREEN);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, GREEN);
                         break;
 
                     case treeBurning:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, RED);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, RED);
                         break;
 
                     case treeBurnt:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, DARKGRAY);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, DARKGRAY);
                         break;
 
                     case treePutOut:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, BLUE);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, BLUE);
                         break;
 
                     case treeRetardant:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, PURPLE);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, PURPLE);
                         break;
 
                     case road:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, GRAY);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, GRAY);
                         break;
 
                     case house:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, BROWN);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, BROWN);
                         break;
 
                     case houseBurnt:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, BLACK);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, BLACK);
                         break;
 
                     case houseBurning:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, ORANGE);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, ORANGE);
                         break;
 
                     case houseRetardant:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, PURPLE);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, PURPLE);
                         break;
                     case water:
-                        DrawRectangle(drawX, drawY, subCellWidth, subCellHeight, BLUE);
+                        DrawRectangle(drawX, drawY, subCellSize, subCellSize, BLUE);
                         break;
                 }
             }
         }
     }
+    if(waitingForClick2){
+        DrawCircle(mouseX1, mouseY1, 6, YELLOW);
+    }
     if(lineExists){
 
         // Line width
-        float lineThickness = subCellWidth / 2;
+        float lineThickness = subCellSize / 2;
 
         // Line color
         Color lineColor = BLUE;

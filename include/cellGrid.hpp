@@ -25,7 +25,7 @@ class cellGrid
 
     int mouseX1, mouseX2, mouseY1, mouseY2,
     timeUpdate, timeWind, timeLine,
-    mapWidth, mapHeight, subCell, 
+    mapWidth, mapHeight, subCell, cellSize, mapStartX, mapStartY,
     windDirectionV = 0, windSpeed = 0, windSpeedTime = 0, 
     waterCooldown = 0, waterCooldownEnd = 0,
     retardantCooldown = 0, retardantCooldownEnd = 0,

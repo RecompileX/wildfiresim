@@ -4,8 +4,8 @@
 
 ui uiO;
 int sWidth = 1080, sHeight = 1080;
-const int sFrameRste = 240;
-bool mapLoaded = false, mapAdded = false, inSettings = false, editVolume = false;
+const int sFrameRate = 240;
+bool mapLoaded = false, inSettings = false, editVolume = false;
 char volumeText[4] = "50";
 int volume = 50;
 
@@ -18,7 +18,7 @@ int main(){
     mapData.listFiles(mapList);
 
     InitWindow(sWidth, sHeight, "WildfireSim");
-    SetTargetFPS(sFrameRste);
+    SetTargetFPS(sFrameRate);
 
     while(mapLoaded == false && !WindowShouldClose()){
         BeginDrawing();
