@@ -13,6 +13,12 @@ add_executable(wildfiresim
     resources/fire.rc
 )
 
+add_custom_command(TARGET wildfiresim POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:wildfiresim>/assets"
+)
+
 target_include_directories(wildfiresim PRIVATE
     include
     external
