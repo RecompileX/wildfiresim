@@ -1,6 +1,7 @@
 #define RAYGUI_IMPLEMENTATION
 #include "cellGrid.hpp"
 #include <cstdlib>
+#include <new>
 
 ui uiO;
 int sWidth = 1080, sHeight = 1080;
@@ -11,14 +12,20 @@ int volume = 50;
 
 int main(){
 
+    InitWindow(sWidth, sHeight, "WildfireSim");
+    SetTargetFPS(sFrameRate);
+
+    start:
+    mapLoaded = false;
+    inSettings = false;
+    editVolume = false;
+    uiO = ui{};
+
     map mapData;
     std::string mapName;
 
     std::vector<std::string> mapList;
     mapData.listFiles(mapList);
-
-    InitWindow(sWidth, sHeight, "WildfireSim");
-    SetTargetFPS(sFrameRate);
 
     while(mapLoaded == false && !WindowShouldClose()){
         BeginDrawing();
@@ -85,8 +92,15 @@ int main(){
     
     cellGrid cell(mapData);
     
+    
     while(!WindowShouldClose()){
 
+        if(IsKeyPressed(KEY_R)){
+            cell.~cellGrid();
+            new (&cell) cellGrid(mapData);
+
+        StopMusicStream(victoryMusic);
+        }
         if(cell.victory){
             UpdateMusicStream(victoryMusic);
         }
@@ -111,6 +125,11 @@ int main(){
         ClearBackground(BLACK);
         
         // Drawing
+        if(GuiButton(Rectangle{sWidth * .8f, 20, sWidth * .12f, sWidth * .06f}, "Return")){
+
+            goto start;
+
+        }
         cell.draw(sHeight, sWidth);
         uiO.drawTopBanner();
         uiO.drawButtons(cell.getWaterCooldown(), cell.getRetardantCooldown());
