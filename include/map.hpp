@@ -29,7 +29,7 @@ struct map {
 
     void listFiles(std::vector<std::string>& mapList)
 {
-    for (const auto& file : std::filesystem::directory_iterator("maps")){
+    for (const auto& file : std::filesystem::directory_iterator("assets/maps")){
         if (file.path().extension() == ".map"){
             
             mapList.push_back(file.path().filename().string());

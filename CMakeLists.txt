@@ -7,9 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(wildfiresim
-    main.cpp
-    cellGrid.cpp
-    ui.cpp
+    src/main.cpp
+    src/cellGrid.cpp
+    src/ui.cpp
+    resources/fire.rc
+)
+
+target_include_directories(wildfiresim PRIVATE
+    include
+    external
 )
 
 target_link_libraries(wildfiresim PRIVATE

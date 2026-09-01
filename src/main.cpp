@@ -31,7 +31,7 @@ int main(){
             for(int x = 0; x < mapList.size(); x++){
                 if(GuiButton((Rectangle){25 + ((sWidth - 50) / mapList.size()) * x, sHeight / 2, (sWidth - 50) / mapList.size(), .1 * sHeight}, mapList[x].c_str())){
                     mapName = mapList[x];
-                    mapData.load("maps/" + mapName);
+                    mapData.load("assets/maps/" + mapName);
                     mapLoaded = true;
                     break;
                 }
@@ -68,18 +68,18 @@ int main(){
     }
 
     std::vector<std::string> musicList = {
-        "music/blue-forest.ogg",
-        "music/castle-unknown.ogg",
-        "music/golden-turrets.ogg",
-        "music/night-chip.ogg",
-        "music/the-old-master.ogg",
-        "music/turtle-nap.ogg"
+        "assets/music/blue-forest.ogg",
+        "assets/music/castle-unknown.ogg",
+        "assets/music/golden-turrets.ogg",
+        "assets/music/night-chip.ogg",
+        "assets/music/the-old-master.ogg",
+        "assets/music/turtle-nap.ogg"
     };
 
     InitAudioDevice();
     SetMasterVolume(volume / 100.0f);
     int musicNumber = GetRandomValue(0, musicList.size() - 1);
-    Music victoryMusic = LoadMusicStream("music/victory.ogg");
+    Music victoryMusic = LoadMusicStream("assets/music/victory.ogg");
     Music music = LoadMusicStream(musicList[musicNumber].c_str());
     PlayMusicStream(music);
     
