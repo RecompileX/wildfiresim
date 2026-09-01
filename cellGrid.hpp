@@ -29,7 +29,8 @@ class cellGrid
     windDirectionV = 0, windSpeed = 0, windSpeedTime = 0, 
     waterCooldown = 0, waterCooldownEnd = 0,
     retardantCooldown = 0, retardantCooldownEnd = 0,
-    timeText = 0;
+    timeText = 0, startingStructureCount = 0, environmentalTargetCount = 0,
+    harmfulRetardantHits = 0, score = 0;
 
     float length, angle;
     bool firstRun = true, waitingForClick2 = false, lineExists = false, waterLengthExceeded = false, retardantLengthExceeded = false;
@@ -43,9 +44,12 @@ class cellGrid
 
     public:
     
+
     cellGrid(map& map);
+    bool victory = false;
     void update(liquidType liquid);
     void draw(int sHeight, int sWidth);
     int getWaterCooldown() const { return waterCooldown; }
     int getRetardantCooldown() const { return retardantCooldown; }
+    int getScore() const { return score; }
 };

@@ -19,6 +19,12 @@ cellGrid::cellGrid(map& map){
             cellGridLiquidTime[x][y].resize(subCell);
             for (int z = 0; z < subCell; z++){
                 cellGridState[x][y][z] = map.mapData[x][y][z];
+                if(cellGridState[x][y][z] == treeHealthy || cellGridState[x][y][z] == house){
+                    startingStructureCount++;
+                }
+                if(cellGridState[x][y][z] == house || cellGridState[x][y][z] == water){
+                    environmentalTargetCount++;
+                }
             }
         }
     }
@@ -163,6 +169,10 @@ void cellGrid::applyLiquidToLine(liquidType liquid){
             }
             else if(state == house || state == houseBurning){
                 state = houseRetardant;
+                harmfulRetardantHits++;
+            }
+            else if(state == water){
+                harmfulRetardantHits++;
             }
         }
 
@@ -275,12 +285,23 @@ void cellGrid::update(liquidType liquid){
         windDirectionCalculator(windDirection);
         // Previous update
         auto oldGridState = cellGridState;
+        bool fireExists = false;
+        int survivingStructures = 0;
         
         // Map cells
         for (int x = 0; x < mapWidth; x++){
             for (int y = 0; y < mapHeight; y++){
                 // Subcells
                 for (int z = 0; z < subCell; z++){
+                    // Victory Check
+                    if(cellGridState[x][y][z] == treeBurning || cellGridState[x][y][z] == houseBurning){
+                        fireExists = true;
+                    }
+                    if(cellGridState[x][y][z] == treeHealthy || cellGridState[x][y][z] == treePutOut ||
+                       cellGridState[x][y][z] == treeRetardant || cellGridState[x][y][z] == house ||
+                       cellGridState[x][y][z] == houseRetardant){
+                        survivingStructures++;
+                    }
                     // Burnout / Evap
                     if(cellGridTime[x][y][z] <= timeUpdate - treeBurnTime && oldGridState[x][y][z] == treeBurning){
 
@@ -365,6 +386,16 @@ void cellGrid::update(liquidType liquid){
                     }
                 }
             }
+        }
+        victory = !fireExists;
+        if(victory && startingStructureCount > 0){
+            float survivalPercent = (float)survivingStructures / startingStructureCount;
+            float cleanPercent = 1.0f;
+            if(environmentalTargetCount > 0){
+                cleanPercent -= (float)harmfulRetardantHits / environmentalTargetCount;
+            }
+            cleanPercent = std::clamp(cleanPercent, 0.0f, 1.0f);
+            score = std::clamp((int)std::round(survivalPercent * 750 + cleanPercent * 250), 0, 1000);
         }
     }
 }
