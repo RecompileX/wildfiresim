@@ -17,7 +17,7 @@ int main(){
     std::vector<std::string> mapList;
     mapData.listFiles(mapList);
 
-    InitWindow(sWidth, sHeight, "Wildfire Sim");
+    InitWindow(sWidth, sHeight, "WildfireSim");
     SetTargetFPS(sFrameRste);
 
     while(mapLoaded == false && !WindowShouldClose()){
@@ -26,7 +26,7 @@ int main(){
         if(inSettings == false){
             ClearBackground(RED);
         
-            DrawText("Wildfire sim v1.0", sWidth/2 - .5 * (MeasureText("Wildfire sim  v0.1", 60)), .25 * sHeight, 60, WHITE);
+            DrawText("Wildfire Sim v0.3", sWidth/2 - .5 * (MeasureText("Wildfire sim  v0.1", 60)), .25 * sHeight, 60, WHITE);
             DrawText("Select map", sWidth/2 - .5 * (MeasureText("Select map", 40)), .4 * sHeight, 40, WHITE);
             for(int x = 0; x < mapList.size(); x++){
                 if(GuiButton((Rectangle){25 + ((sWidth - 50) / mapList.size()) * x, sHeight / 2, (sWidth - 50) / mapList.size(), .1 * sHeight}, mapList[x].c_str())){
