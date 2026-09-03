@@ -43,7 +43,6 @@ class cellGrid
     void applyLiquidToLine(liquidType liquid);
 
     public:
-    
 
     cellGrid(map& map);
     bool victory = false;
