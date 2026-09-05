@@ -36,36 +36,35 @@ cellGrid::cellGrid(map& map){
             }
         }
     }
-    timeWind = time(0);
-    timeUpdate = time(0);
+    timeWind = time(nullptr);
+    timeUpdate = time(nullptr);
     waterCooldown = startingWaterCooldown;
-    waterCooldownEnd = time(0) + startingWaterCooldown;
+    waterCooldownEnd = time(nullptr) + startingWaterCooldown;
     retardantCooldown = startingRetardantCooldown;
-    retardantCooldownEnd = time(0) + startingRetardantCooldown;
-    srand(time(0));
+    retardantCooldownEnd = time(nullptr) + startingRetardantCooldown;
+    srand(time(nullptr));
     bool fireStarted = false;
     while(fireStarted == false){
         int xC = toolbox::random(0, mapWidth - 1), yC = toolbox::random(0, mapHeight - 1), zC = toolbox::random(0, subCell - 1);
         if(cellGridState[xC][yC][zC] == treeHealthy){
             cellGridState[xC][yC][zC] = treeBurning;
-            cellGridTime[xC][yC][zC] = time(0);
+            cellGridTime[xC][yC][zC] = time(nullptr);
             fireStarted = true;
         }
     }
 }
 
-// variables labled time 2 is current time with a delay depending on the function to be comapred with current time
+// variables labeled time 2 is current time with a delay depending on the function to be compared with current time
 
 void cellGrid::windDirectionCalculator(int windDirection[2]){
-    int time2;
-    time2 = time(0) - 15;
+    int time2 = time(nullptr) - 15;
     if(firstRun){
         windSpeed = toolbox::random(0, 90);
         windDirectionV = toolbox::random(0, 7);
         firstRun = false;
     }
     if(timeWind <= time2){
-        timeWind = time(0);
+        timeWind = time(nullptr);
         windSpeed = toolbox::random(0, 90);
         windDirectionV = toolbox::random(0, 7);
     }
@@ -183,7 +182,7 @@ void cellGrid::applyLiquidToLine(liquidType liquid){
 
         // Liquid time
         if(state != previousState){
-            cellGridLiquidTime[x][y][z] = time(0);
+            cellGridLiquidTime[x][y][z] = time(nullptr);
         }
     }
 }
@@ -192,7 +191,7 @@ void cellGrid::update(liquidType liquid){
     if(firstRun){
     windDirectionCalculator(windDirection);
     }
-    int currentTime = time(0);
+    int currentTime = time(nullptr);
 
     // Water cooldown
     if(waterCooldownEnd > currentTime){
@@ -210,8 +209,8 @@ void cellGrid::update(liquidType liquid){
         retardantCooldown = 0;
     }
 
-    int time2 = time(0) - windSpeedTime;
-    int timeLine2 = time(0) - 2;
+    int time2 = time(nullptr) - windSpeedTime;
+    int timeLine2 = time(nullptr) - 2;
 
     // Map bounds
     bool mouseOnMap =
@@ -250,20 +249,20 @@ void cellGrid::update(liquidType liquid){
             if((lineLiquid == waterT && lengthCells <= maxWaterLength) ||
                (lineLiquid == retardantT && lengthCells <= maxRetardantLength)){
 
-                timeLine = time(0);
+                timeLine = time(nullptr);
                 lineExists = true;
                 waitingForClick2 = false;
             }
             else if(lineLiquid == waterT){
                 waterLengthExceeded = true;
                 retardantLengthExceeded = false;
-                timeText = time(0);
+                timeText = time(nullptr);
                 waitingForClick2 = false;
             }
             else if(lineLiquid == retardantT){
                 retardantLengthExceeded = true;
                 waterLengthExceeded = false;
-                timeText = time(0);
+                timeText = time(nullptr);
                 waitingForClick2 = false;
             }
         }
@@ -286,7 +285,7 @@ void cellGrid::update(liquidType liquid){
     }
     
     if(timeUpdate <= time2){
-        timeUpdate = time(0);
+        timeUpdate = time(nullptr);
         windDirectionCalculator(windDirection);
         // Previous update
         auto oldGridState = cellGridState;
@@ -369,11 +368,11 @@ void cellGrid::update(liquidType liquid){
                                 // Ignite fuel
                                 if(oldGridState[nextX][nextY][nextZ] == treeHealthy){
                                     cellGridState[nextX][nextY][nextZ] = treeBurning;
-                                    cellGridTime[nextX][nextY][nextZ] = time(0);
+                                    cellGridTime[nextX][nextY][nextZ] = time(nullptr);
                                 }
                                 else if(oldGridState[nextX][nextY][nextZ] == house){
                                     cellGridState[nextX][nextY][nextZ] = houseBurning;
-                                    cellGridTime[nextX][nextY][nextZ] = time(0);
+                                    cellGridTime[nextX][nextY][nextZ] = time(nullptr);
                                 }
                             }
                         }
@@ -495,13 +494,13 @@ void cellGrid::draw(int sHeight, int sWidth){
             lineColor
         );
     }
-    if(waterLengthExceeded && timeText >= time(0) - 3){
+    if(waterLengthExceeded && timeText >= time(nullptr) - 3){
         DrawText("Water length exceeded! Max length is 12 cells!", GetScreenWidth()/2 - MeasureText("Water length exceeded! Max length is 12 cells!", 40)/2, GetScreenHeight()/2, 40, RED);
     }
     else{
         waterLengthExceeded = false;
     }
-    if(retardantLengthExceeded && timeText >= time(0) - 3){
+    if(retardantLengthExceeded && timeText >= time(nullptr) - 3){
         DrawText("Retardant length exceeded! Max length is 6 cells!", GetScreenWidth()/2 - MeasureText("Retardant length exceeded! Max length is 6 cells!", 40)/2, GetScreenHeight()/2, 40, RED);
     }
     else{
