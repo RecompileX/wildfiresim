@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <string>
 #include <print>
+#include <vector>
+#include <sstream>
 
 enum cellState {
     treeHealthy,
@@ -37,13 +39,13 @@ struct map {
     }
 }
     
-    void load(const std::string& filename) {
+    bool load(const std::string& filename) {
 
         std::ifstream file(filename);
 
         if (!file.is_open()){
             std::println("Map file not found");
-            return;
+            return false;
         }
 
         // Read the first line
@@ -53,25 +55,34 @@ struct map {
         // Header must be in the format #widthxheight
         if (header.size() < 4 || header[0] != '#'){
             std::println("Header not in correct format or not found");
-            return;
+            return false;
         }
         // find the x ex: 16"x"16
         size_t xPosition = header.find('x');
 
         if (xPosition == std::string::npos){
             std::println("xPosition returned npos integer");
-            return;
+            return false;
         }
         
 
         // get width height from header
-        width = std::stoi(header.substr(1, xPosition - 1));
-        height = std::stoi(header.substr(xPosition + 1));
+        std::istringstream dimensions(header.substr(1));
+        char separator;
+        if (!(dimensions >> width >> separator >> height) || separator != 'x'){
+            std::println("Invalid dimensions");
+            return false;
+        }
+        dimensions >> std::ws;
+        if (!dimensions.eof()){
+            std::println("Invalid dimensions");
+            return false;
+        }
 
         // Dimensions check
         if (width <= 0 || height <= 0){
             std::println("Invalid dimensions");
-            return;
+            return false;
         }
 
         // resize map
@@ -88,16 +99,20 @@ struct map {
         }
 
         std::string cell;
+        bool hasTree = false;
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                file >> cell;
+                if (!(file >> cell)){
+                    std::println("Map is incomplete" );
+                    return false;
+                }
 
                 // Grid box has only correct numbers of subCell check
                 if (cell.size() != subCell)
-                    return;
+                    return false;
 
                 for (int z = 0; z < subCell; z++)
                 {
@@ -105,6 +120,7 @@ struct map {
                     {
                         case 'T':
                             mapData[x][y][z] = treeHealthy;
+                            hasTree = true;
                             break;
 
                         case 'W':
@@ -121,10 +137,15 @@ struct map {
 
                         default:
                             std::println("Invalid cell type");
-                            return;
+                            return false;
                     }
                 }
             }
         }
+        if (!hasTree){
+            std::println("Map needs at least one tree" );
+            return false;
+        }
+        return true;
     }
 };

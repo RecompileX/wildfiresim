@@ -20,7 +20,7 @@ cellGrid::cellGrid(map& map){
     for (int x = 0; x < mapWidth; x++){
         cellGridState[x].resize(mapHeight);
         cellGridTime[x].resize(mapHeight);
-        cellGridLiquidTime[x].resize(mapHeig ht);
+        cellGridLiquidTime[x].resize(mapHeight);
         for (int y = 0; y < mapHeight; y++){
             cellGridState[x][y].resize(subCell);
             cellGridTime[x][y].resize(subCell);

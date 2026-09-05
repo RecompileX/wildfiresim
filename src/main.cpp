@@ -38,8 +38,7 @@ int main(){
             for(int x = 0; x < mapList.size(); x++){
                 if(GuiButton((Rectangle){25 + ((sWidth - 50) / mapList.size()) * x, sHeight / 2, (sWidth - 50) / mapList.size(), .1 * sHeight}, mapList[x].c_str())){
                     mapName = mapList[x];
-                    mapData.load("assets/maps/" + mapName);
-                    mapLoaded = true;
+                    mapLoaded = mapData.load("assets/maps/" + mapName);
                     break;
                 }
             }
@@ -127,6 +126,10 @@ int main(){
         // Drawing
         if(GuiButton(Rectangle{sWidth * .8f, 20, sWidth * .12f, sWidth * .06f}, "Return")){
 
+            EndDrawing();
+            UnloadMusicStream(music);
+            UnloadMusicStream(victoryMusic);
+            CloseAudioDevice();
             goto start;
 
         }
